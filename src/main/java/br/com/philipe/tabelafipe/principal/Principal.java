@@ -2,11 +2,15 @@ package br.com.philipe.tabelafipe.principal;
 
 import br.com.philipe.tabelafipe.model.Dados;
 import br.com.philipe.tabelafipe.model.Modelos;
+import br.com.philipe.tabelafipe.model.Veiculo;
 import br.com.philipe.tabelafipe.service.ConsumoApi;
 import br.com.philipe.tabelafipe.service.ConverteDados;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Principal {
 
@@ -51,5 +55,40 @@ public class Principal {
 
         System.out.println("Modelos dessa marca");
         modeloLista.modelos().stream().sorted(Comparator.comparing(Dados::codigo)).forEach(System.out::println);
+
+        System.out.println("Informe o modelo específico: ");
+        var nomeVeiculo = scanner.nextLine();
+
+        List<Dados> modelosFiltrados = modeloLista.modelos()
+                .stream().filter(m -> m.nome().toLowerCase()
+                        .contains(nomeVeiculo.toLowerCase()))
+                .collect(Collectors.toList());
+
+        System.out.println("Modelos Filtrados");
+        modelosFiltrados.forEach(System.out::println);
+
+        System.out.println("Digite o codigo do modelo: ");
+        var codigoModelo = scanner.nextLine();
+
+        endereco = endereco + "/" + codigoModelo + "/anos";
+
+        json = consumo.obterDados(endereco);
+        List<Dados> anos = conversor.obterLista(json, Dados.class);
+
+        List<Veiculo> veiculos = new ArrayList<>();
+        for (int i = 0; i < anos.size(); i++) {
+            var enderecoAnos = endereco + "/" + anos.get(i).codigo();
+            json = consumo.obterDados(enderecoAnos);
+            Veiculo veiculo = conversor.obterDados(json, Veiculo.class);
+            veiculos.add(veiculo);
+        }
+
+        System.out.println("TODOS OS VEÍCULOS FILTRADOS POR ANO: ");
+
+        veiculos.forEach(System.out::println);
+
+
+
+
     }
 }
